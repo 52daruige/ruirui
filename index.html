@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            text-decoration: none;
+        }
+        html,body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        ul {
+            margin: 0 auto;
+            width: 330px;
+            height: 440px;
+            padding: 5px;
+            position: relative;
+            background: #cccccc;
+            -webkit-user-select: none;
+        }
+        ul li {
+            width: 100px;
+            height: 100px;
+            float: left;
+            margin: 5px;
+            background: lightgreen;
+            opacity: 0;
+        }
+        ul li img {
+            width: 100%;
+            display: block;
+        }
+        ul li.on {
+            background: -webkit-linear-gradient(top,lightseagreen,lightsalmon,lightcoral)
+        }
+        #box {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 111;
+            transform: translate(-50%,-50%);
+            background: #cccccc;
+            opacity: 0;
+            display: none;
+        }
+        #box .pig {
+            width: 100%;
+            height: 100%;
+            display: block;
+            opacity: 0;
+        }
+        #box .close {
+            width: 50px;
+            height: 50px;
+            display: block;
+            line-height: 50px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: bolder;
+            font-family: "微软雅黑 Light";
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: #7F7F7F;
+            opacity: 0;
+            /*background: black;*/
+            z-index: 100;
+
+        }
+        #box .close:hover {
+            background: red;
+            transform: rotate(360deg);
+            transition: 1s;
+        }
+        p {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            line-height: 200px;
+            text-align: center;
+            font-size: 25px;
+            background: darkgreen;
+            color: white;
+            position: absolute;
+            left: 50%;
+            margin-left: -100px;
+            bottom: 0;
+            word-break: keep-all;
+        }
+    </style>
+</head>
+<body>
+<ul></ul>
+<div id="box"><img class="pig" src="img/101.jpg" alt=""><a class="close" href="javascript:;">X</a></div>
+<p>大瑞哥你看到了吗</p>
+<audio src="audio/1.mp3" autoplay loop></audio>
+<script src="js/utils.js"></script>
+<script src="js1/1.events.js"></script>
+<script src="js/4.move.js"></script>
+<script src="js1/2.Drag.js"></script>
+<script>
+    var oUl = document.getElementsByTagName('ul')[0];
+    var aLi = oUl.getElementsByTagName('li');
+    var oBody = document.getElementsByTagName('body')[0];
+    var oBox = document.getElementById('box');
+    var pigPhoto = oBox.getElementsByTagName('img')[0];
+    var oClose = oBody.getElementsByTagName('a')[0];
+    var curDrag = null;
+    var public_Img = null;
+    var oldSrc = null;
+
+    createLi(12);
+    function createLi(n) {
+        var frg = document.createDocumentFragment();
+        for(var i=0; i<n; i++) {
+            var oLi = document.createElement('li');
+            oLi.innerHTML = '<img src="img/' + (i + 1) + '.png" alt="">';
+            frg.appendChild(oLi);
+        }
+        oUl.appendChild(frg);
+        frg = null;
+    }
+    //增加拖拽的功能
+    movePhoto();
+    function movePhoto() {
+        for(var i=aLi.length-1; i>=0; i--) {
+            var oLi = aLi[i];
+            oLi.index = i;
+            oLi.oldColor = utils.css(oLi, 'background');
+            var l = oLi.l = oLi.offsetLeft;
+            var t = oLi.t = oLi.offsetTop;
+            oLi.style.left = (oLi.l = oLi.offsetLeft) + 'px';
+            oLi.style.top = (oLi.t = oLi.offsetTop) + 'px';
+            oLi.style.position = 'absolute';
+            oLi.style.margin = 0;
+            curDrag = new Drag(oLi);
+            curDrag.photo(aLi);
+            curDrag.border();
+        }
+    }
+
+    for (var i=0; i<aLi.length; i++) {
+        var oLi = aLi[i];
+        var t = oLi.t;
+        oLi.style.top = t - 1000 + 'px';
+    }
+
+    var n = 0;
+    var num = 0;
+    var t2 = null;
+    var t3 = null;
+    var speed = 50;
+    var rnd1 = null;
+    var rnd2 = null;
+    var timer = setInterval(function () {
+        if(n>=aLi.length-1) {
+            clearInterval(timer);
+        }
+        if(n==11) {
+            animate({id: aLi[n], target: {top:aLi[n].t,opacity: 1}, callback:function () {
+                t2 = setInterval(function () {
+                    if(num>=aLi.length) {
+                        num = 0;
+                    }
+                    for(var i=0; i<aLi.length; i++) {
+                        aLi[i].style.background = 'lightgreen';
+                    }
+                    aLi[num].style.background = getColor();
+                    num++;
+                    rnd1 = utils.rnd(0, 50);
+                    rnd2 = utils.rnd(0, 50);
+                    if(rnd1===rnd2) {
+                        clearInterval(t2);
+                        aLi[num - 1].className = '';
+                        var oImg = aLi[num-1].getElementsByTagName('img')[0];
+                        oldSrc = oImg.getAttribute('src');
+                        var newStr = 'img/100.png';
+                        oImg.src = newStr;
+                        var numBer = 0;
+                        t3 = setInterval(function () {
+                            if(utils.css(oImg,'display')=='block') {
+                                oImg.parentNode.style.background = getColor();
+                                utils.css(oImg, 'display', 'none');
+                            }else {
+                                oImg.setAttribute('src', newStr);
+                                utils.css(oImg, 'display', 'block');
+                            }
+                            numBer++;
+                            if(numBer==6) {
+                                clearInterval(t3);
+                                oImg.src = newStr;
+                                public_Img = oImg;
+                                utils.css(oImg, 'cursor', 'pointer');
+                                ev.on(oImg, 'click', showPicture);
+                            }
+                        },500)
+                    }
+                }, speed*=1.5);
+            }});
+        }else {
+            animate({id: aLi[n], target: {top:aLi[n].t,opacity: 1}});
+        }
+        n++;
+    }, 200);
+
+
+    function showPicture(e) {
+        oBox.style.display = 'block';
+        oBox.t = oBox.offsetTop;
+        oBox.style.top =  oBox.t -1000 + 'px';
+        oUl.style.opacity = 0;
+        animate({id: oBox, target: {top: oBox.t, opacity: 1}, duration: 1000,effect:2,callback:function () {
+//            var t = utils.offset(oClose).top;
+            var l = utils.offset(oClose).left;
+//            console.log(l, t);
+            oClose.l = l;
+//            oClose.t = t;
+//            oClose.style.top = -2000 + 'px';
+//            oClose.style.left = 5000 + 'px';
+//            console.log(oClose.offsetTop);
+            animate({id: pigPhoto, target: {opacity: 1}, duration:1000, effect:3,callback:function () {
+                animate({id: oClose, target: {opacity: 1}, duration: 2000, effect: 3});
+
+//                animate({id:oClose,target:{left:oClose.l},effect:3,duration:1000,callback:function () {
+////                    oClose.style.background = 'white';
+//                    animate({id:oClose,target:{opacity:0},effect:1,duration:1000,callback:function () {
+//                        animate({id: oClose, target: {opacity: 1, effect: 3}});
+//                    }})
+//                }})
+            }});
+        }});
+        e.preventDefault();
+        ev.off(public_Img, 'click', showPicture);
+        oClose.onclick=function () {
+            oBox.style.display = 'none';
+            animate({id: oUl, target: {opacity: 1}, duration: 3000,effect:2});
+            public_Img.src = oldSrc;
+            public_Img.parentNode.style.background= 'lightgreen';
+        }
+    }
+
+    function getColor() {
+        return `-webkit-linear-gradient(top,rgb(${utils.rnd(0, 255)},${utils.rnd(0, 255)},${utils.rnd(0, 255)}),rgb(${utils.rnd(0, 255)},${utils.rnd(0, 255)},${utils.rnd(0, 255)}),rgb(${utils.rnd(0, 255)},${utils.rnd(0, 255)},${utils.rnd(0, 255)}))`;
+    }
+
+
+
+
+
+
+</script>
+</body>
+</html>
